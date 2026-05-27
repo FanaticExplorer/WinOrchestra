@@ -21,6 +21,7 @@ var (
 	procIsIconic                 = user32.NewProc("IsIconic")
 	procGetForegroundWindow      = user32.NewProc("GetForegroundWindow")
 	procPostMessageW             = user32.NewProc("PostMessageW")
+	procShowWindow               = user32.NewProc("ShowWindow")
 
 	procCreateToolhelp32Snapshot = kernel32.NewProc("CreateToolhelp32Snapshot")
 	procProcess32FirstW          = kernel32.NewProc("Process32FirstW")
@@ -38,6 +39,8 @@ const (
 	WS_CAPTION    = 0x00C00000
 
 	WM_CLOSE = 0x0010
+
+	SW_MINIMIZE = 6
 
 	TH32CS_SNAPPROCESS = 0x00000002
 )

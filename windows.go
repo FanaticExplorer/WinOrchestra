@@ -125,3 +125,8 @@ func toEntry(w window, names map[uint32]string, foregroundHwnd syscall.Handle) w
 func closeWindow(hwnd syscall.Handle) {
 	procPostMessageW.Call(uintptr(hwnd), WM_CLOSE, 0, 0)
 }
+
+// minimizeWindow minimizes the given window.
+func minimizeWindow(hwnd syscall.Handle) {
+	procShowWindow.Call(uintptr(hwnd), SW_MINIMIZE)
+}
