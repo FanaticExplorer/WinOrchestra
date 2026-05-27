@@ -93,6 +93,10 @@ winorchestra list -p "notepad" | jq 'length > 0'
 }
 ```
 
+## Support
+
+I'm a student building tools like this in my free time — if it's useful to you, a [donation](https://donate.fanaticexplorer.dev/) helps me keep going.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
