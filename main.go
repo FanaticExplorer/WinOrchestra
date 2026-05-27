@@ -102,6 +102,7 @@ var (
 	flagProcess string
 	flagPID     int
 	flagList    bool
+	flagRaw     bool
 )
 
 func init() {
@@ -109,6 +110,7 @@ func init() {
 	flag.StringVar(&flagProcess, "process", "", "Filter by process .exe name (partial, case-insensitive)")
 	flag.IntVar(&flagPID, "pid", 0, "Filter by exact process ID")
 	flag.BoolVar(&flagList, "list", false, "List matching windows as JSON")
+	flag.BoolVar(&flagRaw, "raw", false, "Output JSON without indentation (compact)")
 }
 
 func enumerateWindows() []window {
@@ -217,7 +219,13 @@ func main() {
 		entries = append(entries, toEntry(w, names, syscall.Handle(foregroundHwnd)))
 	}
 
-	out, err := json.MarshalIndent(entries, "", "  ")
+	var out []byte
+	var err error
+	if flagRaw {
+		out, err = json.Marshal(entries)
+	} else {
+		out, err = json.MarshalIndent(entries, "", "  ")
+	}
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
