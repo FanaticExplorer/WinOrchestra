@@ -11,14 +11,15 @@ var focusCmd = &cobra.Command{
 	Short: "Focus the first matching window",
 	Long:  `Restore (if minimized) and bring the first matching window to the foreground.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		w, names, err := findFirstWindow()
+		windows, names, err := findWindows()
 		if err != nil {
 			return err
 		}
 
-		focusWindow(w.handle)
-
-		fmt.Printf("focused: %s (%s, %d)\n", w.title, names[w.pid], w.pid)
+		for _, w := range windows {
+			focusWindow(w.handle)
+			fmt.Printf("focused: %s (%s, %d)\n", w.title, names[w.pid], w.pid)
+		}
 		return nil
 	},
 }

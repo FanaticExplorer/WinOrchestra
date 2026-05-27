@@ -79,27 +79,30 @@ func enumerateWindows() []window {
 
 // filterWindows returns windows that match all provided criteria.
 // If no criteria are given the unfiltered slice is returned.
-func filterWindows(windows []window, title, process string, pid int, names map[uint32]string) []window {
-	if title == "" && process == "" && pid == 0 {
+func filterWindows(windows []window, title, process, class string, pid int, names map[uint32]string) []window {
+	if title == "" && process == "" && class == "" && pid == 0 {
 		return windows
 	}
 
 	var result []window
 	for _, w := range windows {
 		exeName := names[w.pid]
-		if matchWindow(w, exeName, title, process, pid) {
+		if matchWindow(w, exeName, title, process, class, pid) {
 			result = append(result, w)
 		}
 	}
 	return result
 }
 
-// matchWindow checks a single window against title, process, and PID filters.
-func matchWindow(w window, exeName, title, process string, pid int) bool {
+// matchWindow checks a single window against title, process, class, and PID filters.
+func matchWindow(w window, exeName, title, process, class string, pid int) bool {
 	if title != "" && !strings.Contains(strings.ToLower(w.title), strings.ToLower(title)) {
 		return false
 	}
 	if process != "" && !strings.Contains(strings.ToLower(exeName), strings.ToLower(process)) {
+		return false
+	}
+	if class != "" && !strings.Contains(strings.ToLower(w.class), strings.ToLower(class)) {
 		return false
 	}
 	if pid != 0 && w.pid != uint32(pid) {
@@ -122,22 +125,26 @@ func toEntry(w window, names map[uint32]string, foregroundHwnd syscall.Handle) w
 	}
 }
 
-// findFirstWindow validates that at least one filter is provided,
-// then enumerates windows and returns the first match.
-func findFirstWindow() (window, map[uint32]string, error) {
-	if flagTitle == "" && flagProcess == "" && flagPID == 0 {
-		return window{}, nil, fmt.Errorf("at least one filter is required: -t, -p, or --pid")
+// findWindows validates filters, enumerates windows, and returns matching windows.
+// With --all, all matches are returned. Otherwise, only the first match is returned.
+func findWindows() ([]window, map[uint32]string, error) {
+	if flagTitle == "" && flagProcess == "" && flagPID == 0 && flagClass == "" {
+		return nil, nil, fmt.Errorf("at least one filter is required: -t, -p, --pid, or --class")
 	}
 
 	windows := enumerateWindows()
 	names := processNames()
-	matched := filterWindows(windows, flagTitle, flagProcess, flagPID, names)
+	matched := filterWindows(windows, flagTitle, flagProcess, flagClass, flagPID, names)
 
 	if len(matched) == 0 {
-		return window{}, nil, fmt.Errorf("no matching window found")
+		return nil, nil, fmt.Errorf("no matching window found")
 	}
 
-	return matched[0], names, nil
+	if !flagAll {
+		return matched[:1], names, nil
+	}
+
+	return matched, names, nil
 }
 
 // closeWindow sends a WM_CLOSE message to the window, asking it to close gracefully.

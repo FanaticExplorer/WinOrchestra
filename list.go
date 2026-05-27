@@ -20,7 +20,7 @@ var listCmd = &cobra.Command{
 		windows := enumerateWindows()
 		names := processNames()
 
-		matched := filterWindows(windows, flagTitle, flagProcess, flagPID, names)
+		matched := filterWindows(windows, flagTitle, flagProcess, flagClass, flagPID, names)
 
 		foregroundHwnd, _, _ := procGetForegroundWindow.Call()
 		entries := make([]windowEntry, 0, len(matched))

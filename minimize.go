@@ -11,14 +11,15 @@ var minimizeCmd = &cobra.Command{
 	Short: "Minimize the first matching window",
 	Long:  `Minimize the first window that matches the given filters.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		w, names, err := findFirstWindow()
+		windows, names, err := findWindows()
 		if err != nil {
 			return err
 		}
 
-		minimizeWindow(w.handle)
-
-		fmt.Printf("minimized: %s (%s, %d)\n", w.title, names[w.pid], w.pid)
+		for _, w := range windows {
+			minimizeWindow(w.handle)
+			fmt.Printf("minimized: %s (%s, %d)\n", w.title, names[w.pid], w.pid)
+		}
 		return nil
 	},
 }

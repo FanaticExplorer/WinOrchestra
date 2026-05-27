@@ -10,6 +10,8 @@ var (
 	flagTitle   string
 	flagProcess string
 	flagPID     int
+	flagClass   string
+	flagAll     bool
 )
 
 var rootCmd = &cobra.Command{
@@ -25,4 +27,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&flagTitle, "title", "t", "", "Filter by window title (partial, case-insensitive)")
 	rootCmd.PersistentFlags().StringVarP(&flagProcess, "process", "p", "", "Filter by process .exe name (partial, case-insensitive)")
 	rootCmd.PersistentFlags().IntVar(&flagPID, "pid", 0, "Filter by exact process ID")
+	rootCmd.PersistentFlags().StringVar(&flagClass, "class", "", "Filter by window class (partial, case-insensitive)")
+	rootCmd.PersistentFlags().BoolVar(&flagAll, "all", false, "Apply action to all matching windows, not just the first")
 }
