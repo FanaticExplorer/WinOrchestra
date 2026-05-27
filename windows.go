@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -119,6 +120,24 @@ func toEntry(w window, names map[uint32]string, foregroundHwnd syscall.Handle) w
 		Minimized: minimized != 0,
 		Focused:   syscall.Handle(w.handle) == foregroundHwnd,
 	}
+}
+
+// findFirstWindow validates that at least one filter is provided,
+// then enumerates windows and returns the first match.
+func findFirstWindow() (window, map[uint32]string, error) {
+	if flagTitle == "" && flagProcess == "" && flagPID == 0 {
+		return window{}, nil, fmt.Errorf("at least one filter is required: -t, -p, or --pid")
+	}
+
+	windows := enumerateWindows()
+	names := processNames()
+	matched := filterWindows(windows, flagTitle, flagProcess, flagPID, names)
+
+	if len(matched) == 0 {
+		return window{}, nil, fmt.Errorf("no matching window found")
+	}
+
+	return matched[0], names, nil
 }
 
 // closeWindow sends a WM_CLOSE message to the window, asking it to close gracefully.
