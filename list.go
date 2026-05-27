@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	listRaw bool
+)
+
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List matching windows as JSON",
@@ -26,7 +30,7 @@ var listCmd = &cobra.Command{
 
 		var out []byte
 		var err error
-		if flagRaw {
+		if listRaw {
 			out, err = json.Marshal(entries)
 		} else {
 			out, err = json.MarshalIndent(entries, "", "  ")
@@ -40,5 +44,7 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
+	listCmd.Flags().BoolVar(&listRaw, "raw", false, "Output JSON without indentation")
+
 	rootCmd.AddCommand(listCmd)
 }

@@ -10,7 +10,6 @@ var (
 	flagTitle   string
 	flagProcess string
 	flagPID     int
-	flagRaw     bool
 )
 
 var rootCmd = &cobra.Command{
@@ -26,5 +25,4 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&flagTitle, "title", "t", "", "Filter by window title (partial, case-insensitive)")
 	rootCmd.PersistentFlags().StringVarP(&flagProcess, "process", "p", "", "Filter by process .exe name (partial, case-insensitive)")
 	rootCmd.PersistentFlags().IntVar(&flagPID, "pid", 0, "Filter by exact process ID")
-	rootCmd.PersistentFlags().BoolVar(&flagRaw, "raw", false, "Output JSON without indentation")
 }
