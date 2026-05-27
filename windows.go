@@ -130,3 +130,12 @@ func closeWindow(hwnd syscall.Handle) {
 func minimizeWindow(hwnd syscall.Handle) {
 	procShowWindow.Call(uintptr(hwnd), SW_MINIMIZE)
 }
+
+// focusWindow restores the window if minimized and brings it to the foreground.
+func focusWindow(hwnd syscall.Handle) {
+	iconic, _, _ := procIsIconic.Call(uintptr(hwnd))
+	if iconic != 0 {
+		procShowWindow.Call(uintptr(hwnd), SW_RESTORE)
+	}
+	procSetForegroundWindow.Call(uintptr(hwnd))
+}
