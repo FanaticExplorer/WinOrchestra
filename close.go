@@ -11,6 +11,10 @@ var closeCmd = &cobra.Command{
 	Short: "Close the first matching window",
 	Long:  `Close the first window that matches the given filters.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if flagTitle == "" && flagProcess == "" && flagPID == 0 {
+			return fmt.Errorf("at least one filter is required: -t, -p, or --pid")
+		}
+
 		windows := enumerateWindows()
 		names := processNames()
 
@@ -20,9 +24,10 @@ var closeCmd = &cobra.Command{
 			return fmt.Errorf("no matching window found")
 		}
 
-		closeWindow(matched[0].handle)
+		w := matched[0]
+		closeWindow(w.handle)
 
-		fmt.Println("Closed:", matched[0].title)
+		fmt.Printf("closed: %s (%s, %d)\n", w.title, names[w.pid], w.pid)
 		return nil
 	},
 }

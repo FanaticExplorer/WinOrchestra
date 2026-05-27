@@ -11,6 +11,10 @@ var focusCmd = &cobra.Command{
 	Short: "Focus the first matching window",
 	Long:  `Restore (if minimized) and bring the first matching window to the foreground.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if flagTitle == "" && flagProcess == "" && flagPID == 0 {
+			return fmt.Errorf("at least one filter is required: -t, -p, or --pid")
+		}
+
 		windows := enumerateWindows()
 		names := processNames()
 
@@ -20,9 +24,10 @@ var focusCmd = &cobra.Command{
 			return fmt.Errorf("no matching window found")
 		}
 
-		focusWindow(matched[0].handle)
+		w := matched[0]
+		focusWindow(w.handle)
 
-		fmt.Println("Focused:", matched[0].title)
+		fmt.Printf("focused: %s (%s, %d)\n", w.title, names[w.pid], w.pid)
 		return nil
 	},
 }

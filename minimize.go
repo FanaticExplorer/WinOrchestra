@@ -11,6 +11,10 @@ var minimizeCmd = &cobra.Command{
 	Short: "Minimize the first matching window",
 	Long:  `Minimize the first window that matches the given filters.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if flagTitle == "" && flagProcess == "" && flagPID == 0 {
+			return fmt.Errorf("at least one filter is required: -t, -p, or --pid")
+		}
+
 		windows := enumerateWindows()
 		names := processNames()
 
@@ -20,9 +24,10 @@ var minimizeCmd = &cobra.Command{
 			return fmt.Errorf("no matching window found")
 		}
 
-		minimizeWindow(matched[0].handle)
+		w := matched[0]
+		minimizeWindow(w.handle)
 
-		fmt.Println("Minimized:", matched[0].title)
+		fmt.Printf("minimized: %s (%s, %d)\n", w.title, names[w.pid], w.pid)
 		return nil
 	},
 }
