@@ -33,15 +33,16 @@ winorchestra [command] --help      Show help for a specific command
 
 ### Filters
 
-All commands support filters. `focus`, `minimize`, and `close` require at least one (`list` works with or without them).
-
 | Flag | Description |
 |---|---|
 | `-t, --title` | Partial window title (case‑insensitive) |
 | `-p, --process` | Partial `.exe` name (case‑insensitive) |
+| `--class` | Partial window class (case‑insensitive) |
 | `--pid` | Exact process ID |
 
-Multiple filters are ANDed — a window must match all of them.
+Multiple filters are ANDed — a window must match all of them. `focus`, `minimize`, and `close` require at least one filter; `list` works with or without.
+
+Use `--all` to apply an action to every matching window instead of just the first.
 
 ### Examples
 
@@ -61,8 +62,11 @@ winorchestra focus -p "chrome"
 # Minimize a window by title
 winorchestra minimize -t "Calculator"
 
-# Close Discord (it will minimize to tray instead of exiting)
-winorchestra close -p "discord"
+# Close all Discord windows
+winorchestra close -p "discord" --all
+
+# List only windows of a specific class
+winorchestra list --class "MozillaWindowClass"
 ```
 
 ### jq recipes
