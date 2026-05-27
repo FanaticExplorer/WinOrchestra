@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"syscall"
 	"unsafe"
 )
@@ -27,6 +29,9 @@ var (
 	procProcess32FirstW          = kernel32.NewProc("Process32FirstW")
 	procProcess32NextW           = kernel32.NewProc("Process32NextW")
 	procCloseHandle              = kernel32.NewProc("CloseHandle")
+
+	procIsIconic            = user32.NewProc("IsIconic")
+	procGetForegroundWindow = user32.NewProc("GetForegroundWindow")
 )
 
 const (
@@ -54,10 +59,12 @@ type PROCESSENTRY32W struct {
 }
 
 type windowEntry struct {
-	PID   uint32 `json:"pid"`
-	Exe   string `json:"exe"`
-	Class string `json:"class"`
-	Title string `json:"title"`
+	PID       uint32 `json:"pid"`
+	Exe       string `json:"exe"`
+	Class     string `json:"class"`
+	Title     string `json:"title"`
+	Minimized bool   `json:"minimized"`
+	Focused   bool   `json:"focused"`
 }
 
 type window struct {
@@ -90,7 +97,21 @@ func processNames() map[uint32]string {
 	return result
 }
 
-func main() {
+var (
+	flagTitle   string
+	flagProcess string
+	flagPID     int
+	flagList    bool
+)
+
+func init() {
+	flag.StringVar(&flagTitle, "title", "", "Filter by window title (partial, case-insensitive)")
+	flag.StringVar(&flagProcess, "process", "", "Filter by process .exe name (partial, case-insensitive)")
+	flag.IntVar(&flagPID, "pid", 0, "Filter by exact process ID")
+	flag.BoolVar(&flagList, "list", false, "List matching windows as JSON")
+}
+
+func enumerateWindows() []window {
 	var windows []window
 
 	cb := syscall.NewCallback(func(hwnd syscall.Handle, _ uintptr) uintptr {
@@ -134,22 +155,72 @@ func main() {
 	})
 	procEnumWindows.Call(cb, 0)
 
-	names := processNames()
+	return windows
+}
 
-	list := make([]windowEntry, 0, len(windows))
-	for _, w := range windows {
-		list = append(list, windowEntry{
-			PID:   w.pid,
-			Exe:   names[w.pid],
-			Class: w.class,
-			Title: w.title,
-		})
+func filterWindows(windows []window, title, process string, pid int, names map[uint32]string) []window {
+	if title == "" && process == "" && pid == 0 {
+		return windows
 	}
 
-	out, err := json.MarshalIndent(list, "", "  ")
+	var result []window
+	for _, w := range windows {
+		exeName := names[w.pid]
+		if matchWindow(w, exeName, title, process, pid) {
+			result = append(result, w)
+		}
+	}
+	return result
+}
+
+func matchWindow(w window, exeName, title, process string, pid int) bool {
+	if title != "" && !strings.Contains(strings.ToLower(w.title), strings.ToLower(title)) {
+		return false
+	}
+	if process != "" && !strings.Contains(strings.ToLower(exeName), strings.ToLower(process)) {
+		return false
+	}
+	if pid != 0 && w.pid != uint32(pid) {
+		return false
+	}
+	return true
+}
+
+func toEntry(w window, names map[uint32]string, foregroundHwnd syscall.Handle) windowEntry {
+	minimized, _, _ := procIsIconic.Call(uintptr(w.handle))
+
+	return windowEntry{
+		PID:       w.pid,
+		Exe:       names[w.pid],
+		Class:     w.class,
+		Title:     w.title,
+		Minimized: minimized != 0,
+		Focused:   syscall.Handle(w.handle) == foregroundHwnd,
+	}
+}
+
+func main() {
+	flag.Parse()
+
+	if !flagList {
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	windows := enumerateWindows()
+	names := processNames()
+
+	matched := filterWindows(windows, flagTitle, flagProcess, flagPID, names)
+	foregroundHwnd, _, _ := procGetForegroundWindow.Call()
+	entries := make([]windowEntry, 0, len(matched))
+	for _, w := range matched {
+		entries = append(entries, toEntry(w, names, syscall.Handle(foregroundHwnd)))
+	}
+
+	out, err := json.MarshalIndent(entries, "", "  ")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		return
+		os.Exit(1)
 	}
 	fmt.Println(string(out))
 }
