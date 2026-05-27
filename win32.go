@@ -20,6 +20,7 @@ var (
 	procGetClassNameW            = user32.NewProc("GetClassNameW")
 	procIsIconic                 = user32.NewProc("IsIconic")
 	procGetForegroundWindow      = user32.NewProc("GetForegroundWindow")
+	procPostMessageW             = user32.NewProc("PostMessageW")
 
 	procCreateToolhelp32Snapshot = kernel32.NewProc("CreateToolhelp32Snapshot")
 	procProcess32FirstW          = kernel32.NewProc("Process32FirstW")
@@ -35,6 +36,8 @@ const (
 	WS_EX_TOOLWIN = 0x00000080
 	WS_CHILD      = 0x40000000
 	WS_CAPTION    = 0x00C00000
+
+	WM_CLOSE = 0x0010
 
 	TH32CS_SNAPPROCESS = 0x00000002
 )

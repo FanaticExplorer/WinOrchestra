@@ -120,3 +120,8 @@ func toEntry(w window, names map[uint32]string, foregroundHwnd syscall.Handle) w
 		Focused:   syscall.Handle(w.handle) == foregroundHwnd,
 	}
 }
+
+// closeWindow sends a WM_CLOSE message to the window, asking it to close gracefully.
+func closeWindow(hwnd syscall.Handle) {
+	procPostMessageW.Call(uintptr(hwnd), WM_CLOSE, 0, 0)
+}
