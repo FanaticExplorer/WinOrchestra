@@ -1,13 +1,13 @@
 # WinOrchestra
 
-Control Windows windows from the command line.  
+Control Windows windows from the command line.
+(*Insert a pun about this because I didn't come up with one*)
 
-Based on [WindowManager](https://github.com/FanaticExplorer/WindowManager) (Python) and rewritten in Go for speed, compact binaries, and native Win32 access with zero runtime dependencies.
+Based on my old project [WindowManager](https://github.com/FanaticExplorer/WindowManager) (Python) (which I made as a beginner) and rewritten in Go for speed, compact binaries (and just to prove myself that I can do it).
 
 ## Install
 
-Download the latest `WinOrchestra.exe` from [Releases](https://github.com/FanaticExplorer/WinOrchestra/releases) and place it anywhere — no installer, no runtime.
-
+Download the latest executable from [Releases](https://github.com/FanaticExplorer/WinOrchestra/releases) and place it anywhere where you want. 
 Or build from source:
 
 ```
@@ -33,7 +33,7 @@ winorchestra [command] --help      Show help for a specific command
 
 ### Filters
 
-All commands except `list` require at least one filter:
+All commands support filters. `focus`, `minimize`, and `close` require at least one (`list` works with or without them).
 
 | Flag | Description |
 |---|---|
@@ -67,7 +67,7 @@ winorchestra close -p "discord"
 
 ### jq recipes
 
-Since `list` outputs JSON, you can pipe it into [jq](https://jqlang.github.io/jq/):
+Since `list` outputs JSON, you can pipe it into something like [jq](https://jqlang.github.io/jq/):
 
 ```bash
 # Show only minimized windows
@@ -80,7 +80,7 @@ winorchestra list | jq '.[] | select(.focused)'
 winorchestra list -p "notepad" | jq 'length > 0'
 ```
 
-### JSON output
+### JSON output example
 
 ```json
 {
@@ -95,4 +95,4 @@ winorchestra list -p "notepad" | jq 'length > 0'
 
 ## License
 
-MIT © FanaticExplorer
+MIT — see [LICENSE](LICENSE).
